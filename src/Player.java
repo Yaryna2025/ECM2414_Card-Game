@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,11 @@ public class Player {
      */
     private Card lastDrawn;
     private Card lastDiscarded;
+
+    /*
+     * writer for playerN_output.txt
+     */
+    private FileWriter writer;
 
     public Player(int id, CardDeck leftDeck, CardDeck rightDeck, Path outputDirectory) {
         if (id < 1) {
@@ -169,5 +176,53 @@ public class Player {
         lastDrawn = drawn;
         lastDiscarded = discarded;
         return true;
+    }
+
+    /*
+     * Opens the player's output file and writes the initial hand.
+     */
+    public void startLog() throws IOException {
+        writer = new FileWriter(outputFile.toFile());
+        write("player " + id + " initial hand " + getHandString());
+    }
+
+    /*
+     * Takes a turn and logs it to the file.
+     * returns false if the left deck was empty so nothing happened
+     */
+    public boolean playTurn() throws IOException {
+        if (!takeTurn()) {
+            return false;
+        }
+        write("player " + id + " draws a " + lastDrawn + " from deck " + leftDeck.getId());
+        write("player " + id + " discards a " + lastDiscarded + " to deck " + rightDeck.getId());
+        write("player " + id + " current hand is " + getHandString());
+        return true;
+    }
+
+    /*
+     * Writes the final lines to the file when the game ends, depending on whether
+     * this player won or someone else did, then closes the file.
+     */
+    public void finishLog(int winner) throws IOException {
+        if (winner == id) {
+            write("player " + id + " wins");
+            write("player " + id + " exits");
+            write("player " + id + " final hand: " + getHandString());
+        } else {
+            write("player " + winner + " has informed player " + id
+                    + " that player " + winner + " has won");
+            write("player " + id + " exits");
+            write("player " + id + " hand: " + getHandString());
+        }
+        writer.close();
+    }
+
+    /*
+     * Writes one line to the file and saves it straight away.
+     */
+    private void write(String line) throws IOException {
+        writer.write(line + System.lineSeparator());
+        writer.flush();
     }
 }
