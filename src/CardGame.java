@@ -1,10 +1,13 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Runs the card game.
- * Sets up the decks and players and deals out the cards.
+ * Deals the hands and decks
+ * and lets the players take their turns. When finished, it writes the deck output files.
  */
 public class CardGame {
 
@@ -12,6 +15,7 @@ public class CardGame {
     private Path outputDirectory;
     private ArrayList<CardDeck> decks = new ArrayList<>();
     private ArrayList<Player> players = new ArrayList<>();
+    private boolean played = false;
 
     public CardGame(int numberOfPlayers, List<Card> pack, Path outputDirectory) {
         if (numberOfPlayers < 1) {
@@ -67,5 +71,65 @@ public class CardGame {
 
     public int getNumberOfPlayers() {
         return numberOfPlayers;
+    }
+
+    /**
+     * Plays the game and returns the number of the winning player.
+     * May be called only once.
+     */
+    public int play() throws IOException {
+        // make sure the game can only be played once
+        if (played) {
+            throw new IllegalStateException("This game has already been played");
+        }
+        played = true;
+
+        for (int i = 0; i < numberOfPlayers; i++) {
+            players.get(i).startLog();
+        }
+
+        // check if anyone was dealt a winning hand
+        int winner = 0;
+        for (int i = 0; i < numberOfPlayers && winner == 0; i++) {
+            if (players.get(i).hasWinningHand()) {
+                winner = players.get(i).getId();
+            }
+        }
+
+        // players take turns one after another until someone wins
+        // (no threads yet, just getting the game itself working first)
+        while (winner == 0) {
+            for (int i = 0; i < numberOfPlayers && winner == 0; i++) {
+                Player player = players.get(i);
+                if (player.playTurn() && player.hasWinningHand()) {
+                    winner = player.getId();
+                }
+            }
+        }
+        System.out.println("player " + winner + " wins");
+
+        for (int i = 0; i < numberOfPlayers; i++) {
+            players.get(i).finishLog(winner);
+        }
+        writeDeckFiles();
+        return winner;
+    }
+
+    /*
+     * Saves the final contents of each deck into deckN_output.txt
+     */
+    private void writeDeckFiles() throws IOException {
+        for (int i = 0; i < decks.size(); i++) {
+            CardDeck deck = decks.get(i);
+            String contents = deck.getContents();
+            String line = "deck" + deck.getId() + " contents:";
+            if (!contents.isEmpty()) {
+                line += " " + contents;
+            }
+            Path file = outputDirectory.resolve("deck" + deck.getId() + "_output.txt");
+            FileWriter writer = new FileWriter(file.toFile());
+            writer.write(line + System.lineSeparator());
+            writer.close();
+        }
     }
 }
