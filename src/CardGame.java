@@ -1,12 +1,17 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 /**
  * Runs the card game.
- * Deals the hands and decks
+ * Asks for the number of players and the pack file, then deals the hands and decks
  * and lets the players take their turns. When finished, it writes the deck output files.
  */
 public class CardGame {
@@ -130,6 +135,114 @@ public class CardGame {
             FileWriter writer = new FileWriter(file.toFile());
             writer.write(line + System.lineSeparator());
             writer.close();
+        }
+    }
+
+    /*
+     * Checks the text typed by the user for the number of players.
+     * It has to be a whole number of at least 1, otherwise it throws IllegalArgumentException.
+     */
+    static int parseNumberOfPlayers(String text) {
+        if (text == null) {
+            throw new IllegalArgumentException("No number of players given");
+        }
+        text = text.trim();
+        if (!text.matches("[0-9]+")) {
+            throw new IllegalArgumentException("'" + text + "' is not a positive whole number");
+        }
+        int n;
+        try {
+            n = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("'" + text + "' is too large");
+        }
+        if (n < 1) {
+            throw new IllegalArgumentException("There must be at least 1 player");
+        }
+        // we limit the game to 100 players, more than that is too many threads and files
+        if (n > 100) {
+            throw new IllegalArgumentException("There can't be more than 100 players");
+        }
+        return n;
+    }
+
+    /*
+     * Reads the pack file and checks it has exactly 8n lines and every line
+     * is a non-negative whole number. Returns the cards in order (top of the pack first).
+     */
+    static List<Card> loadPack(Path file, int n) throws IOException {
+        ArrayList<String> lines = new ArrayList<>();
+        BufferedReader reader = new BufferedReader(new FileReader(file.toFile()));
+        String nextLine = reader.readLine();
+        while (nextLine != null) {
+            lines.add(nextLine);
+            nextLine = reader.readLine();
+        }
+        reader.close();
+
+        if (lines.size() != 8 * n) {
+            throw new IllegalArgumentException("a pack for " + n + " players needs "
+                    + (8 * n) + " lines but this file has " + lines.size());
+        }
+        ArrayList<Card> pack = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            if (!line.matches("[0-9]+")) {
+                throw new IllegalArgumentException("line " + (i + 1) + " ('" + line
+                        + "') is not a non-negative integer");
+            }
+            try {
+                pack.add(new Card(Integer.parseInt(line)));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("line " + (i + 1) + " ('" + line + "') is too large");
+            }
+        }
+        return pack;
+    }
+
+    /*
+     * Asks for the number of players until a valid answer is given.
+     */
+    static int promptForPlayers(Scanner in, PrintStream out) {
+        while (true) {
+            out.println("Please enter the number of players:");
+            try {
+                return parseNumberOfPlayers(in.nextLine());
+            } catch (IllegalArgumentException e) {
+                out.println("Invalid number of players: " + e.getMessage() + ".");
+            }
+        }
+    }
+
+    /*
+     * Asks for a pack location until a valid pack file is given.
+     */
+    static List<Card> promptForPack(Scanner in, PrintStream out, int n) {
+        while (true) {
+            out.println("Please enter location of pack to load:");
+            String line = in.nextLine().trim();
+            try {
+                return loadPack(Path.of(line), n);
+            } catch (IOException e) {
+                out.println("Could not read that pack file (" + e.getMessage() + "). Please try again.");
+            } catch (IllegalArgumentException e) {
+                out.println("Invalid pack: " + e.getMessage() + ". Please enter a valid pack file.");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        // Ask the user for the number of players and a valid card pack, then set up and play the game.
+        Scanner in = new Scanner(System.in);
+        try {
+            int n = promptForPlayers(in, System.out);
+            List<Card> pack = promptForPack(in, System.out, n);
+            CardGame game = new CardGame(n, pack, Path.of("."));
+            game.play();
+        } catch (NoSuchElementException e) {
+            System.err.println("Input ended before a valid game could be set up.");
+        } catch (IOException e) {
+            System.err.println("Could not write the output files: " + e.getMessage());
         }
     }
 }
