@@ -3,6 +3,8 @@ import java.util.ArrayList;
 /**
  * A deck of cards that works like a queue (FIFO).
  * Cards are drawn from the top and discarded to the bottom.
+ * Methods are synchronized so only one player thread can use the deck at a
+ * time, preventing conflicts.
  */
 public class CardDeck {
 
@@ -28,7 +30,7 @@ public class CardDeck {
      * Adds a card to the bottom (back) of the deck.
      * Throws NullPointerException if the card is null.
      */
-    public void addCard(Card card) {
+    public synchronized void addCard(Card card) {
         if (card == null) {
             throw new NullPointerException("card must not be null");
         }
@@ -39,18 +41,18 @@ public class CardDeck {
      * Removes and returns the card at the top (front) of the deck.
      * Returns null if the deck is empty.
      */
-    public Card drawCard() {
+    public synchronized Card drawCard() {
         if (cards.isEmpty()) {
             return null;
         }
         return cards.remove(0);
     }
 
-    public int size() {
+    public synchronized int size() {
         return cards.size();
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return cards.isEmpty();
     }
 
@@ -58,7 +60,7 @@ public class CardDeck {
      * Returns the card values from top to bottom, with a space between them.
      * For example: "2 4 5 5" or an empty string if the deck is empty.
      */
-    public String getContents() {
+    public synchronized String getContents() {
         String text = "";
         for (int i = 0; i < cards.size(); i++) {
             if (i > 0) {
