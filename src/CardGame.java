@@ -12,12 +12,13 @@ import java.util.Scanner;
 /**
  * Runs the card game.
  * Asks for the number of players and the pack file, then deals the hands and decks
- * and lets the players take their turns. When finished, it writes the deck output files.
+ * and starts the player threads. When finished, it writes the deck output files.
  */
 public class CardGame {
 
     private int numberOfPlayers;
     private Path outputDirectory;
+    private GameState state;
     private ArrayList<CardDeck> decks = new ArrayList<>();
     private ArrayList<Player> players = new ArrayList<>();
     private boolean played = false;
@@ -38,6 +39,7 @@ public class CardGame {
         }
         this.numberOfPlayers = numberOfPlayers;
         this.outputDirectory = outputDirectory;
+        this.state = new GameState(numberOfPlayers);
 
         for (int i = 1; i <= numberOfPlayers; i++) {
             decks.add(new CardDeck(i));
@@ -51,7 +53,7 @@ public class CardGame {
             // the % makes the last player wrap round to deck 1, e.g. with 4 players:
             // 1 % 4 = 1, 2 % 4 = 2, 3 % 4 = 3, 4 % 4 = 0 (deck 1)
             CardDeck rightDeck = decks.get(i % numberOfPlayers);
-            players.add(new Player(i, leftDeck, rightDeck, outputDirectory));
+            players.add(new Player(i, leftDeck, rightDeck, state, outputDirectory));
         }
 
         // Deal each player 4 cards round-robin from the top of the pack.
@@ -82,42 +84,30 @@ public class CardGame {
      * Plays the game and returns the number of the winning player.
      * May be called only once.
      */
-    public int play() throws IOException {
-        // make sure the game can only be played once
-        if (played) {
-            throw new IllegalStateException("This game has already been played");
-        }
-        played = true;
-
-        for (int i = 0; i < numberOfPlayers; i++) {
-            players.get(i).startLog();
-        }
-
-        // check if anyone was dealt a winning hand
-        int winner = 0;
-        for (int i = 0; i < numberOfPlayers && winner == 0; i++) {
-            if (players.get(i).hasWinningHand()) {
-                winner = players.get(i).getId();
+    public int play() throws IOException, InterruptedException {
+        // Make sure the game can only be played once (synchronized so two threads can't both start it).
+        synchronized (this) {
+            if (played) {
+                throw new IllegalStateException("This game has already been played");
             }
+            played = true;
         }
 
-        // players take turns one after another until someone wins
-        // (no threads yet, just getting the game itself working first)
-        while (winner == 0) {
-            for (int i = 0; i < numberOfPlayers && winner == 0; i++) {
-                Player player = players.get(i);
-                if (player.playTurn() && player.hasWinningHand()) {
-                    winner = player.getId();
-                }
-            }
-        }
-        System.out.println("player " + winner + " wins");
-
+        // Wrap each player in their own thread.
+        Thread[] threads = new Thread[numberOfPlayers];
         for (int i = 0; i < numberOfPlayers; i++) {
-            players.get(i).finishLog(winner);
+            threads[i] = new Thread(players.get(i), "player-" + players.get(i).getId());
         }
+        for (int i = 0; i < numberOfPlayers; i++) {
+            threads[i].start();
+        }
+        // Wait for all player threads to finish.
+        for (int i = 0; i < numberOfPlayers; i++) {
+            threads[i].join();
+        }
+
         writeDeckFiles();
-        return winner;
+        return state.getWinner();
     }
 
     /*
@@ -243,6 +233,9 @@ public class CardGame {
             System.err.println("Input ended before a valid game could be set up.");
         } catch (IOException e) {
             System.err.println("Could not write the output files: " + e.getMessage());
+        } catch (InterruptedException e) {
+            // Mark the thread as interrupted again if it got cut off.
+            Thread.currentThread().interrupt();
         }
     }
 }
