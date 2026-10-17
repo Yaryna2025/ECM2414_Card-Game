@@ -123,9 +123,19 @@ public class Player implements Runnable {
      * Returns false (and changes nothing) if the left deck has no cards.
      */
     public boolean takeTurn() {
-        // Lock both decks so nobody else can touch them while we draw and discard.
-        synchronized (leftDeck) {
-            synchronized (rightDeck) {
+        // DEADLOCK PREVENTION:
+        // Always lock the deck with the lower ID first. If player A and player B try
+        // to lock deck 1 and deck 2 at the same time, locking the lower one first means
+        // they never get stuck waiting on each other.
+        CardDeck firstLock = leftDeck;
+        CardDeck secondLock = rightDeck;
+        if (leftDeck.getId() > rightDeck.getId()) {
+            firstLock = rightDeck;
+            secondLock = leftDeck;
+        }
+
+        synchronized (firstLock) {
+            synchronized (secondLock) {
                 synchronized (this) {
                     if (handSize != HAND_SIZE) {
                         throw new IllegalStateException("Player " + id
