@@ -17,10 +17,15 @@ import java.util.Scanner;
 public class CardGame {
 
     private int numberOfPlayers;
+    // Directory where all output log files will be written.
     private Path outputDirectory;
+    // Central hub that keeps all player threads synchronized and signals when game has ended.
     private GameState state;
+    // Storing all the card decks in the system.
     private ArrayList<CardDeck> decks = new ArrayList<>();
+    // Holding all the active player thread objects.
     private ArrayList<Player> players = new ArrayList<>();
+    // Flag indicating wheather the game has already been played.
     private boolean played = false;
 
     public CardGame(int numberOfPlayers, List<Card> pack, Path outputDirectory) {
@@ -111,7 +116,7 @@ public class CardGame {
     }
 
     /*
-     * Saves the final contents of each deck into deckN_output.txt
+     * Saves the final contents of each deck into deckN_output.txt.
      */
     private void writeDeckFiles() throws IOException {
         for (int i = 0; i < decks.size(); i++) {
@@ -146,13 +151,17 @@ public class CardGame {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("'" + text + "' is too large");
         }
+
+        // Performance warning for high thread counts (doesn't crash).
+        if (n > 100) {
+            System.out.println("Warning: Running with more than 100 players may impact performance due to high thread and file usage.");
+        }
+
+        // Must be a positive integer.
         if (n < 1) {
             throw new IllegalArgumentException("There must be at least 1 player");
         }
-        // we limit the game to 100 players, more than that is too many threads and files
-        if (n > 100) {
-            throw new IllegalArgumentException("There can't be more than 100 players");
-        }
+
         return n;
     }
 
