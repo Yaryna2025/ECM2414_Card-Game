@@ -23,6 +23,7 @@ public class CardDeck {
         this.id = id;
     }
 
+    /* Returns the unique identifier number of this deck.*/
     public int getId() {
         return id;
     }
@@ -49,10 +50,12 @@ public class CardDeck {
         return cards.remove(0);
     }
 
+    /* Returns the current number of cards in the deck.*/
     public synchronized int size() {
         return cards.size();
     }
 
+    /* Checks if the deck currently contains any cards.*/
     public synchronized boolean isEmpty() {
         return cards.isEmpty();
     }
