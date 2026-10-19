@@ -3,19 +3,20 @@ import java.util.ArrayList;
 /**
  * A deck of cards that works like a queue (FIFO).
  * Cards are drawn from the top and discarded to the bottom.
- * Methods are synchronized so only one player thread can use the deck at a
- * time, preventing conflicts.
+ * Each method is synchronized, so a single call is thread safe.
+ * Players lock both of their decks to make draw and discard one atomic action.
  */
 public class CardDeck {
 
     private final int id;
     /*
-     * Holds the cards in order, index 0 is the top of the deck.
+     * Holds the cards in order.
+     * Index 0 is the top of the deck.
      */
     private final ArrayList<Card> cards = new ArrayList<>();
 
     public CardDeck(int id) {
-        // deck numbers start from 1, so anything less is rejected
+        // Deck numbers start from 1, so anything less is rejected.
         if (id < 1) {
             throw new IllegalArgumentException("Deck id must be at least 1: " + id);
         }
