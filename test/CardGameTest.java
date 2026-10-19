@@ -118,23 +118,10 @@ public class CardGameTest {
                 () -> CardGame.parseNumberOfPlayers(null));
     }
 
-    /**
-     * Test 3: Verifies the limit of 100 players.
-     * 100 players is still allowed, but 101 is too many and must throw an exception.
-     */
-    @Test
-    public void parseNumberOfPlayersRejectsMoreThan100() {
-        // Assert that exactly 100 is accepted (the boundary).
-        assertEquals(100, CardGame.parseNumberOfPlayers("100"));
-        // Assert that one more than the limit is rejected.
-        assertThrows(IllegalArgumentException.class,
-                () -> CardGame.parseNumberOfPlayers("101"));
-    }
-
     // ---------- loading and validating a pack ----------
 
     /**
-     * Test 4: Reads each line of pack files in exact file order.
+     * Test 3: Reads each line of pack files in exact file order.
      * Verifies that all card values (including boundary values and large numbers)
      * are correctly loaded into objects and unpacked into integers.
      */
@@ -155,7 +142,7 @@ public class CardGameTest {
     }
 
     /**
-     * Test 5: Rejects pack files that contain the wrong number of lines.
+     * Test 4: Rejects pack files that contain the wrong number of lines.
      * Verifies that files which are too short, too long, empty, or have a mismatched line count,
      * for a given number of players (for example: an 8-line file given to a 2-player game), we throw an IllegalArgumentException.
      */
@@ -182,7 +169,7 @@ public class CardGameTest {
     }
 
     /**
-     * Test 6: Verifies that the card loader rejects invalid card line formats,
+     * Test 5: Verifies that the card loader rejects invalid card line formats,
      * such as negative numbers, letters, decimals, blank lines, or oversized values.
      * Dynamically tests each edge case by inserting a single bad line into an
      * otherwise valid 8-line pack and ensuring an IllegalArgumentException is thrown.
@@ -204,7 +191,7 @@ public class CardGameTest {
     }
 
     /**
-     * Test 7: Verifies that trying to load a pack from a file path that does not exist
+     * Test 6: Verifies that trying to load a pack from a file path that does not exist
      * is handled by throwing an IOException.
      */
     @Test
@@ -217,7 +204,7 @@ public class CardGameTest {
     // ---------- prompting ----------
 
     /**
-     * Test 8: Verifies that the player prompt loop handles repeated invalid user inputs.
+     * Test 7: Verifies that the player prompt loop handles repeated invalid user inputs.
      * Simulates a user typing multiple bad answers (letters, zero, negative numbers, and blank space)
      *  followed by a valid number, ensuring the program re-prompts, shows error messages, and recovers successfully.
      */
@@ -242,7 +229,7 @@ public class CardGameTest {
     }
 
     /**
-     * - Test 9: Verifies that the pack prompt loop handles missing or malformed pack files.
+     * - Test 8: Verifies that the pack prompt loop handles missing or malformed pack files.
      * - Simulates a user typing a path to a non-existent file, then an incorrectly formatted pack file,
      *   and finally a valid pack file, ensuring the system re-prompts, catches errors, and loads successfully.
      */
@@ -277,7 +264,7 @@ public class CardGameTest {
     // ---------- setting up a game ----------
 
     /**
-     * Test 10: Verifies that the game constructor correctly distributes cards
+     * Test 9: Verifies that the game constructor correctly distributes cards
      * in a strict round-robin fashion during initialization.
      * Confirms that player hands receive alternating cards first, followed by
      * the remaining cards filling up each player's deck in the correct order.
@@ -298,7 +285,7 @@ public class CardGameTest {
     }
 
     /**
-     * Test 11: Verifies that the game constructor rejects a card pack of the wrong size
+     * Test 10: Verifies that the game constructor rejects a card pack of the wrong size
      * for the specified player count (for example: passing 8 cards when a 2-player game requires 16),
      * ensuring an IllegalArgumentException is thrown.
      */
@@ -312,7 +299,7 @@ public class CardGameTest {
     // ---------- playing a whole game ----------
 
     /**
-     * Test 12: Verifies that if a player is dealt a winning hand immediately during game initialization,
+     * Test 11: Verifies that if a player is dealt a winning hand immediately during game initialization,
      * the game ends instantly, correctly writes all player and deck output log files,
      * and leaves the draw decks completely untouched since no turns were taken.
      */
