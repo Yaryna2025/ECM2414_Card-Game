@@ -5,7 +5,7 @@
 public final class Card {
 
     /*
-     * private so outside classes can't change the value directly, and final so it
+     * Private so outside classes can't change the value directly, and final so it
      * can never change after the card is made (immutable).
      * This also makes Card thread safe because no thread can change it.
      */
@@ -14,8 +14,9 @@ public final class Card {
     /*
      * Creates a card.
      * It checks if the value is less than 0.
-     * If it is negative, it crashes safely by throwing an IllegalArgumentException,
-     * otherwise it saves the value into the card.
+     * If it is negative, it rejects negative values by throwing
+     * an IllegalArgumentException, otherwise it saves the
+     * value into the card.
      */
     public Card(int value) {
         if (value < 0) {
@@ -25,7 +26,8 @@ public final class Card {
     }
 
     /*
-     * Value is private, so other classes need this getter to look at the value of the card.
+     * Value is private, so other classes need this getter to look at the value of
+     * the card.
      */
     public int getValue() {
         return value;
