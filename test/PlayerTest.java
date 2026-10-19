@@ -205,4 +205,31 @@ public class PlayerTest {
         assertEquals("1 1 1 1", p.getHandString());
     }
 
+    /**
+     * Test 11: Ensures the last player in the ring handles flipped deck IDs
+     * (left ID > right ID) correctly without breaking.
+     */
+    @Test
+    public void turnWorksWhenTheLeftDeckHasTheHigherId() {
+        // Deck 1 is on the right (smaller ID: 1).
+        CardDeck deck1 = new CardDeck(1);
+
+        // Deck 2 is on the left (larger ID: 2).
+        CardDeck deck2 = new CardDeck(2);
+
+        stack(deck2, 3);
+
+        // Setup Player with left=deck2 (ID 2) and right=deck1 (ID 1).
+        // This forces the code to test the "lock smaller ID first" path.
+        Player p = new Player(2, deck2, deck1, new GameState(2), tempFolderPath());
+
+        deal(p, 2, 2, 5, 6);
+
+        assertTrue(p.takeTurn());
+
+        assertEquals("2 2 6 3", p.getHandString());
+        assertEquals("5", deck1.getContents());
+        assertEquals("", deck2.getContents());
+    }
+
 }
