@@ -79,4 +79,25 @@ public class CardDeckTest {
         assertEquals("", new CardDeck(1).getContents());
     }
 
+    /** Test 8: Verifies that cards added by many threads at once are never lost. */
+    @Test
+    public void concurrentAddsDoNotLoseCards() throws InterruptedException {
+        CardDeck deck = new CardDeck(1);
+        int threadCount = 8;
+        int perThread = 1000;
+        Thread[] threads = new Thread[threadCount];
+        for (int t = 0; t < threadCount; t++) {
+            threads[t] = new Thread(() -> {
+                for (int i = 0; i < perThread; i++) {
+                    deck.addCard(new Card(i));
+                }
+            });
+            threads[t].start();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+        assertEquals(threadCount * perThread, deck.size());
+    }
+
 }
