@@ -1,3 +1,6 @@
 .DS_Store
 out/
 *.class
+build/
+player*_output.txt
+deck*_output.txt
