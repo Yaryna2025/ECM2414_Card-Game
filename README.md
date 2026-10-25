@@ -347,10 +347,25 @@ java -jar cards.jar
 
 It asks the same two questions as before and writes the output files into the folder you ran it from.
 
+## Creating `cardsTest.zip`
+
+After compiling the game and test classes, run the following command from the project folder:
+
+```bash
+zip -r cardsTest.zip src test build out lib README.md pack2.txt pack3.txt pack4.txt packwin.txt
+```
+
+This creates `cardsTest.zip`, which contains the Java source files, compiled game and test classes, JUnit libraries, README file and sample pack files.
+
+To check the contents of the zip file, run:
+
+```bash
+unzip -l cardsTest.zip
+```
+
 ## Windows
 
 The project was developed and tested on macOS. On Windows, some terminal commands may be different, such as using `;` instead of `:` in Java classpaths. The project has not been tested on Windows.
-
 
 ## The purpose of each source file
 
