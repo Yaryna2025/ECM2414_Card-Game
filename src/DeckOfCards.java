@@ -1,36 +1,35 @@
 import java.util.ArrayList;
 
-/**
- * A deck of cards that works like a queue (FIFO).
- * Cards are drawn from the top and discarded to the bottom.
- * Each method is synchronized, so a single call is thread safe.
- * Players lock both of their decks to make draw and discard one atomic action.
+/*
+ * Card decks in this game operate as a FIFO queue.
+ * Cards are taken from the top of the deck and added to the bottom.
+ * The synchronized keyword makes deck operations atomic, so only one thread can use these methods at a time.
  */
-public class CardDeck {
+public class DeckOfCards {
 
     private final int id;
     /*
-     * Holds the cards in order.
+     * Keeps track of the cards in order.
      * Index 0 is the top of the deck.
      */
     private final ArrayList<Card> cards = new ArrayList<>();
 
-    public CardDeck(int id) {
-        // Deck numbers start from 1, so anything less is rejected.
+    public DeckOfCards(int id) {
+        // Deck IDs start from 1, so throw an error if it's 0 or negative.
         if (id < 1) {
             throw new IllegalArgumentException("Deck id must be at least 1: " + id);
         }
         this.id = id;
     }
 
-    /* Returns the unique identifier number of this deck.*/
+    // Returns the unique id number of this deck.
     public int getId() {
         return id;
     }
 
     /*
-     * Adds a card to the bottom (back) of the deck.
-     * Throws NullPointerException if the card is null.
+     * Card is added to the bottom of the deck.
+     * Throws an exception if someone tries to add a null card.
      */
     public synchronized void addCard(Card card) {
         if (card == null) {
@@ -40,8 +39,8 @@ public class CardDeck {
     }
 
     /*
-     * Removes and returns the card at the top (front) of the deck.
-     * Returns null if the deck is empty.
+     * Takes the top card off the deck and returns it.
+     * If the deck is empty there's nothing to draw, so it returns null.
      */
     public synchronized Card drawCard() {
         if (cards.isEmpty()) {
@@ -50,18 +49,18 @@ public class CardDeck {
         return cards.remove(0);
     }
 
-    /* Returns the current number of cards in the deck.*/
+    // Returns how many cards are in the deck.
     public synchronized int size() {
         return cards.size();
     }
 
-    /* Checks if the deck currently contains any cards.*/
+    // Quick check to see if the deck has no cards.
     public synchronized boolean isEmpty() {
         return cards.isEmpty();
     }
 
     /*
-     * Returns the card values from top to bottom, with a space between them.
+     * Returns the card values from top to bottom, separated by spaces.
      * For example: "2 4 5 5" or an empty string if the deck is empty.
      */
     public synchronized String getContents() {
