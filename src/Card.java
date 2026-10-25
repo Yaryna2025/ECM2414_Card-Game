@@ -1,41 +1,35 @@
-/**
+/*
  * A playing card with a fixed number value
  * that can't be changed after it's made.
  */
 public final class Card {
 
     /*
-     * Private so outside classes can't change the value directly, and final so it
-     * can never change after the card is made (immutable).
-     * This also makes Card thread safe because no thread can change it.
+     * Private so other classes can't change the value directly, and final so it
+     * can't be changed after the card is made (immutable).
+     * This also makes Card thread safe because no thread can change its value.
      */
     private final int value;
 
     /*
-     * Creates a card.
-     * It checks if the value is less than 0.
-     * If it is negative, it rejects negative values by throwing
-     * an IllegalArgumentException, otherwise it saves the
-     * value into the card.
+     * Creates a card with the given value.
+     * If the value is negative, it throws an IllegalArgumentException.
+     * Otherwise, it saves the value into the card.
      */
     public Card(int value) {
+        // Throw an error if the value is negative.
         if (value < 0) {
             throw new IllegalArgumentException("Card value must be non-negative: " + value);
         }
         this.value = value;
     }
 
-    /*
-     * Value is private, so other classes need this getter to look at the value of
-     * the card.
-     */
+    // The value is private, so other classes use this getter to get card's value.
     public int getValue() {
         return value;
     }
 
-    /*
-     * Converts the value into a String, for example: 4 into "4".
-     */
+    // Converts the value into a String, for example: 4 into "4".
     @Override
     public String toString() {
         return "" + value;
